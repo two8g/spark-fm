@@ -46,11 +46,11 @@ spark.stop()
 ```
 
 # Requirements
-Spark-FM is built against Spark 2.1.1.
+Spark-FM is built against Spark 2.4.0.
 
 # Build From Source
-```scala
-sbt package
+```shell
+mvn clean package
 ```
 
 # Licenses

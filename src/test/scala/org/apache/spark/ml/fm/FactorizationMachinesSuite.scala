@@ -17,7 +17,7 @@
 
 package org.apache.spark.ml.fm
 
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.optim.configuration.{Algo, Solver}
 import org.apache.spark.sql.SparkSession
 
@@ -27,35 +27,38 @@ import org.apache.spark.sql.SparkSession
 object FactorizationMachinesSuite {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
-        .builder()
-        .appName("FactorizationMachinesExample")
-        .master("local[*]")
-        .getOrCreate()
+      .builder()
+      .appName("FactorizationMachinesExample")
+      .master("local[*]")
+      .getOrCreate()
 
     val train = spark.read.format("libsvm").load("data/a9a.tr")
     val test = spark.read.format("libsvm").load("data/a9a.te")
 
     val trainer = new FactorizationMachines()
-        .setAlgo(Algo.fromString("binary classification"))
-        .setSolver(Solver.fromString("pftrl"))
-        .setDim((1, 1, 8))
-        .setReParamsL1((0.1, 0.1, 0.1))
-        .setRegParamsL2((0.01, 0.01, 0.01))
-        .setAlpha((0.1, 0.1, 0.1))
-        .setBeta((1.0, 1.0, 1.0))
-        .setInitStdev(0.01)
-        // .setStepSize(0.1)
-        .setTol(0.001)
-        .setMaxIter(1)
-        .setThreshold(0.5)
-        // .setMiniBatchFraction(0.5)
-        .setNumPartitions(4)
+      .setAlgo(Algo.fromString("binary classification"))
+      .setSolver(Solver.fromString("pftrl"))
+      .setDim((1, 1, 8))
+      .setReParamsL1((0.1, 0.1, 0.1))
+      .setRegParamsL2((0.01, 0.01, 0.01))
+      .setAlpha((0.1, 0.1, 0.1))
+      .setBeta((1.0, 1.0, 1.0))
+      .setInitStdev(0.01)
+      // .setStepSize(0.1)
+      .setTol(0.001)
+      .setMaxIter(1)
+      .setThreshold(0.5)
+      // .setMiniBatchFraction(0.5)
+      .setNumPartitions(4)
 
     val model = trainer.fit(train)
     val result = model.transform(test)
     val predictionAndLabel = result.select("prediction", "label")
-    val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
-    println("Accuracy: " + evaluator.evaluate(predictionAndLabel))
+    predictionAndLabel.show()
+    //    val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
+    //    println("Accuracy: " + evaluator.evaluate(predictionAndLabel))
+    val evaluator = new BinaryClassificationEvaluator().setRawPredictionCol("prediction").setMetricName("areaUnderROC")
+    println("areaUnderROC: " + evaluator.evaluate(predictionAndLabel))
     spark.stop()
   }
 }

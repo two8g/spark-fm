@@ -473,7 +473,7 @@ class FactorizationMachinesModel private[ml](
     override val numFeatures: Int)
     extends PredictionModel[Vector, FactorizationMachinesModel] with Serializable {
 
-  override protected def predict(features: Vector): Double = {
+  override def predict(features: Vector): Double = {
     val (p, _) = FactorizationMachinesModel.predictAndSum(
       features, weights, dim, numFeatures)
     algo match {
@@ -715,7 +715,7 @@ class FactorizationMachinesPerCoordinateUpdater(
     val brzRegParamsL2 = BDV.vertcat(BDV.fill(numFeatures * dim._3){regParamsL2._3},
       BDV.fill(numFeatures){regParamsL2._2}, BDV.fill(1){regParamsL2._1})
     val brzWeights: BV[Double] = MLlibVectors.dense(weightsNew).asBreeze
-    val regVal = (brzRegParamsL1 dot abs(brzWeights)) + (brzRegParamsL2 dot (brzWeights :* brzWeights))
+    val regVal = (brzRegParamsL1 dot abs(brzWeights)) + (brzRegParamsL2 dot (brzWeights *:* brzWeights))
 
     (MLlibVectors.dense(weightsNew), regVal, MLlibVectors.dense(nArray), MLlibVectors.dense(zArray))
   }
