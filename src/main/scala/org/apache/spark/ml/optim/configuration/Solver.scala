@@ -24,11 +24,11 @@ object Solver extends Enumeration {
   type Solver = Value
 
   val GradientDescent,
-      ParallelGradientDescent,
-      LBFGS,
-      ParallelFtrl = Value
+  ParallelGradientDescent,
+  LBFGS,
+  ParallelFtrl = Value
 
-  private[ml] def fromString(name: String): Solver = name match {
+  def fromString(name: String): Solver = name match {
     case "sgd" | "SGD" => GradientDescent
     case "psgd" | "PSGD" => ParallelGradientDescent
     case "lbfgs" | "LBFGS" => LBFGS

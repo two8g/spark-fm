@@ -34,7 +34,7 @@ import scala.collection.mutable.ArrayBuffer
   * edu/~dsculley/papers/ad-click-prediction.pdf)
   *
   * @param gradient Gradient function to be used.
-  * @param updater Updater to be used to update weights after every iteration.
+  * @param updater  Updater to be used to update weights after every iteration.
   */
 class ParallelFtrl private[spark](private var gradient: Gradient, private var updater: PerCoordinateUpdater)
   extends Optimizer with Logging {
@@ -171,18 +171,18 @@ class ParallelFtrl private[spark](private var gradient: Gradient, private var up
 
 object ParallelFtrl extends Logging {
   def runParallelFtrl(
-      data: RDD[(Double, Vector)],
-      gradient: Gradient,
-      updater: PerCoordinateUpdater,
-      alpha: Double,
-      beta: Double,
-      lambda1: Double,
-      lambda2: Double,
-      initialWeights: Vector,
-      numIterations: Int,
-      convergenceTol: Double,
-      aggregationDepth: Int,
-      numPartitions: Int): (Vector, Array[Double]) = {
+                       data: RDD[(Double, Vector)],
+                       gradient: Gradient,
+                       updater: PerCoordinateUpdater,
+                       alpha: Double,
+                       beta: Double,
+                       lambda1: Double,
+                       lambda2: Double,
+                       initialWeights: Vector,
+                       numIterations: Int,
+                       convergenceTol: Double,
+                       aggregationDepth: Int,
+                       numPartitions: Int): (Vector, Array[Double]) = {
 
     val stochasticLossHistory = new ArrayBuffer[Double](numIterations)
     // Record previous weight and current one to calculate solution vector difference
@@ -225,10 +225,11 @@ object ParallelFtrl extends Logging {
             localLossSum += localLoss
           }
           Iterator.single((localWeights, localRegVal, localLossSum))
-        }.treeReduce ({ case ((w1, rv1, ls1), (w2, rv2, ls2)) =>
-          val sumWeights = w1.asBreeze + w2.asBreeze
-          val sumRegVal = rv1 + rv2
-          (Vectors.fromBreeze(sumWeights), sumRegVal, ls1 + ls2)}, aggregationDepth)
+        }.treeReduce({ case ((w1, rv1, ls1), (w2, rv2, ls2)) =>
+        val sumWeights = w1.asBreeze + w2.asBreeze
+        val sumRegVal = rv1 + rv2
+        (Vectors.fromBreeze(sumWeights), sumRegVal, ls1 + ls2)
+      }, aggregationDepth)
       stochasticLossHistory.append(lossSum / numParts + sumRegVal)
       BLAS.scal(1.0 / numParts, sumWeights)
       weights = sumWeights
@@ -247,9 +248,9 @@ object ParallelFtrl extends Logging {
   }
 
   private def isConverged(
-      previousWeights: Vector,
-      currentWeights: Vector,
-      convergenceTol: Double): Boolean = {
+                           previousWeights: Vector,
+                           currentWeights: Vector,
+                           convergenceTol: Double): Boolean = {
     // To compare with convergence tolerance.
     val previousBDV = previousWeights.asBreeze.toDenseVector
     val currentBDV = currentWeights.asBreeze.toDenseVector
